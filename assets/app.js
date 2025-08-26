@@ -1,11 +1,12 @@
 (() => {
   'use strict';
 
+  // ===== Service Worker: registra no load =====
   if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js').catch(console.warn);
-  });
-}
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js').catch(console.warn);
+    });
+  }
 
   // ===== Overlay de erro =====
   function showErr(msg){
@@ -157,31 +158,35 @@
     $('#nomeComodo').value = state.rascunho.nome || '';
     $('#tipoTomada').value='simples';
     $('#ampTomada').value='10';
-    $('#qtdTomada').value=0;
+    $('#qtdTomada').value='';
+
     $('#tipoInt').value='is';
-    $('#qtdInt').value=0;
+    $('#qtdInt').value='';
+
     $('#tipoIntPar').value='isp';
-    $('#qtdIntPar').value=0;
+    $('#qtdIntPar').value='';
+
     $('#tipoIntMed').value='isi';
-    $('#qtdIntMed').value=0;
-    $('#qtdCamp').value=0;
+    $('#qtdIntMed').value='';
+
+    $('#qtdCamp').value='';
 
     $('#bastidor').value='4x2';
-    $('#qBast').value=0;
+    $('#qBast').value='';
     $('#espelhoTipo').value='4x2';
     $('#espelhoEsp').value='1';
-    $('#qEsp').value=0;
-    $('#qIntS').value=0;
-    $('#qIntP').value=0;
-    $('#qIntI').value=0;
-    $('#qTom10').value=0;
-    $('#qTom20').value=0;
-    $('#qRJ45_5e').value=0;
-    $('#qRJ45_6e').value=0;
-    $('#qAnt').value=0;
-    $('#qPuls').value=0;
-    $('#qDimer').value=0;
-    $('#qCego').value=0;
+    $('#qEsp').value='';
+    $('#qIntS').value='';
+    $('#qIntP').value='';
+    $('#qIntI').value='';
+    $('#qTom10').value='';
+    $('#qTom20').value='';
+    $('#qRJ45_5e').value='';
+    $('#qRJ45_6e').value='';
+    $('#qAnt').value='';
+    $('#qPuls').value='';
+    $('#qDimer').value='';
+    $('#qCego').value='';
 
     blocoPers.classList.add('hidden');
     blocoNormal.classList.remove('hidden');
@@ -238,22 +243,22 @@
     const tt = $('#tipoTomada').value,
           aa = $('#ampTomada').value,
           qt = Math.max(0, Number($('#qtdTomada').value||0));
-    if(qt>0){ const k = keyTomada(tt, aa); state.rascunho.itens[k] = (state.rascunho.itens[k]||0)+qt; $('#qtdTomada').value=0; added+=qt; }
+    if(qt>0){ const k = keyTomada(tt, aa); state.rascunho.itens[k] = (state.rascunho.itens[k]||0)+qt; $('#qtdTomada').value=''; added+=qt; }
 
     const ti = $('#tipoInt').value,
           qi = Math.max(0, Number($('#qtdInt').value||0));
-    if(qi>0){ state.rascunho.itens[ti] = (state.rascunho.itens[ti]||0)+qi; $('#qtdInt').value=0; added+=qi; }
+    if(qi>0){ state.rascunho.itens[ti] = (state.rascunho.itens[ti]||0)+qi; $('#qtdInt').value=''; added+=qi; }
 
     const tip = $('#tipoIntPar').value,
           qip = Math.max(0, Number($('#qtdIntPar').value||0));
-    if(qip>0){ state.rascunho.itens[tip] = (state.rascunho.itens[tip]||0)+qip; $('#qtdIntPar').value=0; added+=qip; }
+    if(qip>0){ state.rascunho.itens[tip] = (state.rascunho.itens[tip]||0)+qip; $('#qtdIntPar').value=''; added+=qip; }
 
     const tim = $('#tipoIntMed').value,
           qim = Math.max(0, Number($('#qtdIntMed').value||0));
-    if(qim>0){ state.rascunho.itens[tim] = (state.rascunho.itens[tim]||0)+qim; $('#qtdIntMed').value=0; added+=qim; }
+    if(qim>0){ state.rascunho.itens[tim] = (state.rascunho.itens[tim]||0)+qim; $('#qtdIntMed').value=''; added+=qim; }
 
     const qcamp = Math.max(0, Number($('#qtdCamp').value||0));
-    if(qcamp>0){ state.rascunho.itens.camp = (state.rascunho.itens.camp||0)+qcamp; $('#qtdCamp').value=0; added+=qcamp; }
+    if(qcamp>0){ state.rascunho.itens.camp = (state.rascunho.itens.camp||0)+qcamp; $('#qtdCamp').value=''; added+=qcamp; }
 
     if(added===0){ setMsg('Informe ao menos uma quantidade.', true); return; }
 
@@ -264,11 +269,11 @@
   function novoComodo(){
     state.rascunho = { id: uid(), nome:'', itens:{}, customLabels:{} };
     $('#nomeComodo').value = '';
-    $('#tipoTomada').value='simples'; $('#ampTomada').value='10'; $('#qtdTomada').value=0;
-    $('#tipoInt').value='is'; $('#qtdInt').value=0;
-    $('#tipoIntPar').value='isp'; $('#qtdIntPar').value=0;
-    $('#tipoIntMed').value='isi'; $('#qtdIntMed').value=0;
-    $('#qtdCamp').value=0;
+    $('#tipoTomada').value='simples'; $('#ampTomada').value='10'; $('#qtdTomada').value='';
+    $('#tipoInt').value='is'; $('#qtdInt').value='';
+    $('#tipoIntPar').value='isp'; $('#qtdIntPar').value='';
+    $('#tipoIntMed').value='isi'; $('#qtdIntMed').value='';
+    $('#qtdCamp').value='';
     renderItensRascunho();
     setMsg('Digite o nome do novo cômodo.');
   }
@@ -298,14 +303,12 @@
   // Tabelas salvas
   $('#listaComodos').addEventListener('click', ev=>{
     const delItem = ev.target.closest?.('[data-del-item]');
-    const editItem = ev.target.closest?.('[data-edit-item]');
-    const delRoom = ev.target.closest?.('[data-del-room]');
-
     if(delItem){
       const parts = delItem.dataset.delItem.split(':'), roomId = parts[0], key = parts.slice(1).join(':');
       const room = state.comodos.find(c => c.id===roomId);
       if(room){ delete room.itens[key]; if(room.customLabels) delete room.customLabels[key]; save(); renderListaComodos(); }
     }
+    const editItem = ev.target.closest?.('[data-edit-item]');
     if(editItem){
       const parts2 = editItem.dataset.editItem.split(':'), roomId2 = parts2[0], key2 = parts2.slice(1).join(':');
       const room2 = state.comodos.find(c => c.id===roomId2); if(!room2) return;
@@ -317,6 +320,7 @@
         save(); renderListaComodos();
       }
     }
+    const delRoom = ev.target.closest?.('[data-del-room]');
     if(delRoom){
       const id = delRoom.dataset.delRoom;
       const i = state.comodos.findIndex(c => c.id===id);
@@ -344,21 +348,21 @@
     }
 
     $('#bastidor').value='4x2';
-    $('#qBast').value=0;
+    $('#qBast').value='';
     $('#espelhoTipo').value='4x2';
     $('#espelhoEsp').value='1';
-    $('#qEsp').value=0;
-    $('#qIntS').value=0;
-    $('#qIntP').value=0;
-    $('#qIntI').value=0;
-    $('#qTom10').value=0;
-    $('#qTom20').value=0;
-    $('#qRJ45_5e').value=0;
-    $('#qRJ45_6e').value=0;
-    $('#qAnt').value=0;
-    $('#qPuls').value=0;
-    $('#qDimer').value=0;
-    $('#qCego').value=0;
+    $('#qEsp').value='';
+    $('#qIntS').value='';
+    $('#qIntP').value='';
+    $('#qIntI').value='';
+    $('#qTom10').value='';
+    $('#qTom20').value='';
+    $('#qRJ45_5e').value='';
+    $('#qRJ45_6e').value='';
+    $('#qAnt').value='';
+    $('#qPuls').value='';
+    $('#qDimer').value='';
+    $('#qCego').value='';
 
     blocoNormal.classList.add('hidden');
     blocoPers.classList.remove('hidden');
@@ -426,97 +430,88 @@
 
     if(added===0){ setMsg('No personalizado, informe ao menos uma quantidade.', true); return; }
 
+    if(!state.alvoPersId){
+      mergeDraftIntoRooms(true);
+      setMsg('Itens personalizados adicionados (cômodo criado/atualizado).');
+    } else {
+      setMsg('Itens personalizados adicionados.');
+    }
+
+    ['qBast','qEsp','qIntS','qIntP','qIntI','qTom10','qTom20',
+     'qRJ45_5e','qRJ45_6e','qAnt','qPuls','qDimer','qCego']
+     .forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+
     blocoPers.classList.add('hidden');
     blocoNormal.classList.remove('hidden');
-    setMsg('Itens personalizados adicionados.');
   }
 
-  // ===== Exportar PDF (iframe, sem pop-up) =====
-  // ===== Exportar PDF (iframe + srcdoc, mesma origem, sem about:blank) =====
-function exportarPDF(){
-  if(!state.comodos.length){ setMsg('Adicione ao menos um cômodo.', true); return; }
+  // ===== Exportar PDF (iframe + srcdoc, mesma origem) =====
+  function exportarPDF(){
+    if(!state.comodos.length){ setMsg('Adicione ao menos um cômodo.', true); return; }
 
-  const fileTitle = 'Lista de Acabamentos' + (state.listaNome ? ' — ' + state.listaNome : '');
+    const fileTitle = 'Lista de Acabamentos' + (state.listaNome ? ' — ' + state.listaNome : '');
 
-  const css = '<style>'
-    + '@page{ size:A4; margin:16mm }'
-    + 'body{ font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial; color:#111; }'
-    + '.header{ display:flex; align-items:center; gap:12px; border-bottom:2px solid #e9eef6; padding-bottom:10px; margin-bottom:16px; }'
-    + '.header img{ width:40px; height:40px; object-fit:contain; border-radius:8px; }'
-    + 'h1{ font-size:20px; margin:0 }'
-    + 'h2{ font-size:16px; margin:14px 0 8px }'
-    + 'table{ width:100%; border-collapse:collapse; margin-top:6px }'
-    + 'th,td{ border:1px solid #dfe7f3; padding:8px 10px; text-align:left; }'
-    + 'th{ background:#f6f9fe }'
-    + '.small{ font-size:12px }'
-    + '</style>';
+    const css = '<style>'
+      + '@page{ size:A4; margin:16mm }'
+      + 'body{ font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial; color:#111; }'
+      + '.header{ display:flex; align-items:center; gap:12px; border-bottom:2px solid #e9eef6; padding-bottom:10px; margin-bottom:16px; }'
+      + '.header img{ width:40px; height:40px; object-fit:contain; border-radius:8px; }'
+      + 'h1{ font-size:20px; margin:0 }'
+      + 'h2{ font-size:16px; margin:14px 0 8px }'
+      + 'table{ width:100%; border-collapse:collapse; margin-top:6px }'
+      + 'th,td{ border:1px solid #dfe7f3; padding:8px 10px; text-align:left; }'
+      + 'th{ background:#f6f9fe }'
+      + '.small{ font-size:12px }'
+      + '</style>';
 
-  const logoPng = absUrl('assets/img/luxcorp-logo.png');
-  const logoJpg = absUrl('assets/img/luxcorp-logo.jpg');
+    const logoPng = absUrl('assets/img/luxcorp-logo.png');
+    const logoJpg = absUrl('assets/img/luxcorp-logo.jpg');
 
-  const rowHtml = (label, qtd, isCustom) => {
-    // Personalizado sai sem prefixo de quantidade no nome; normal recebe o sufixo de kit
-    const texto = isCustom ? label : (label + KIT_SUFFIX);
-    return '<tr><td>'+escapeHtml(texto)+'</td><td>'+qtd+'</td></tr>';
-  };
+    const rowHtml = (label, qtd, isCustom) => {
+      const texto = isCustom ? label : (label + KIT_SUFFIX);
+      return '<tr><td>'+escapeHtml(texto)+'</td><td>'+qtd+'</td></tr>';
+    };
 
-  const roomTable = (c) => {
-    const rows = [];
-    Object.keys(c.itens).forEach(k=>{
-      const v = c.itens[k];
-      if(v>0){
-        const isCustom = k.indexOf('c:')===0;
-        const label = isCustom ? ((c.customLabels && c.customLabels[k]) || k) : (labels[k] || k);
-        rows.push(rowHtml(label, v, isCustom));
-      }
-    });
-    const tbody = rows.join('') || '<tr><td colspan="2" class="small" style="color:#666">Sem itens</td></tr>';
-    return '<h2>'+escapeHtml(c.nome)+'</h2>'
-         + '<table><thead><tr><th>Item</th><th>Qtd</th></tr></thead><tbody>'+tbody+'</tbody></table>';
-  };
+    const roomTable = (c) => {
+      const rows = [];
+      Object.keys(c.itens).forEach(k=>{
+        const v = c.itens[k];
+        if(v>0){
+          const isCustom = k.indexOf('c:')===0;
+          const label = isCustom ? ((c.customLabels && c.customLabels[k]) || k) : (labels[k] || k);
+          rows.push(rowHtml(label, v, isCustom));
+        }
+      });
+      const tbody = rows.join('') || '<tr><td colspan="2" class="small" style="color:#666">Sem itens</td></tr>';
+      return '<h2>'+escapeHtml(c.nome)+'</h2>'
+           + '<table><thead><tr><th>Item</th><th>Qtd</th></tr></thead><tbody>'+tbody+'</tbody></table>';
+    };
 
-  const html =
-    '<!DOCTYPE html><html><head><meta charset="utf-8">'
-    // o <title> define o nome sugerido quando salvar como PDF
-    + '<title>'+escapeHtml(fileTitle)+'</title>'
-    // garante que URLs relativas (se houver) resolvam a partir da página atual
-    + '<base href="'+escapeHtml(location.href)+'">'
-    + css
-    + '</head><body>'
-    + '<div class="header"><img src="'+logoPng+'" onerror="this.onerror=null;this.src=\''+logoJpg+'\'"><div><h1>'+escapeHtml(fileTitle)+'</h1></div></div>'
-    + state.comodos.map(roomTable).join('')
-    + '</body></html>';
+    const html =
+      '<!DOCTYPE html><html><head><meta charset="utf-8">'
+      + '<title>'+escapeHtml(fileTitle)+'</title>'
+      + '<base href="'+escapeHtml(location.href)+'">'
+      + css
+      + '</head><body>'
+      + '<div class="header"><img src="'+logoPng+'" onerror="this.onerror=null;this.src=\''+logoJpg+'\'"><div><h1>'+escapeHtml(fileTitle)+'</h1></div></div>'
+      + state.comodos.map(roomTable).join('')
+      + '</body></html>';
 
-  // Cria um iframe “invisível” e injeta o HTML via srcdoc (mesma origem)
-  const iframe = document.createElement('iframe');
-  iframe.style.position = 'fixed';
-  iframe.style.right = '0';
-  iframe.style.bottom = '0';
-  iframe.style.width = '0';
-  iframe.style.height = '0';
-  iframe.style.border = '0';
-  document.body.appendChild(iframe);
+    const iframe = document.createElement('iframe');
+    Object.assign(iframe.style, {position:'fixed',right:'0',bottom:'0',width:'0',height:'0',border:'0'});
+    document.body.appendChild(iframe);
 
-  iframe.onload = () => {
-    try {
-      // foca e imprime o documento do iframe
-      iframe.contentWindow.focus();
-      iframe.contentWindow.print();
-    } finally {
-      // limpeza após acionar a impressão
-      setTimeout(() => { try{ iframe.remove(); }catch{} }, 1200);
-    }
-  };
+    iframe.onload = () => {
+      try { iframe.contentWindow.focus(); iframe.contentWindow.print(); }
+      finally { setTimeout(() => { try{ iframe.remove(); }catch{} }, 1200); }
+    };
 
-  // Definimos o conteúdo após registrar o onload
-  iframe.srcdoc = html;
+    iframe.srcdoc = html;
 
-  // Após gerar, limpamos a lista e fechamos o modal (mantém o comportamento atual)
-  resetAll();
-  fechar();
-  setMsg('Lista exportada e zerada. Clique em “+ Lista de acabamentos” para iniciar outra.');
-}
-
+    resetAll();
+    fechar();
+    setMsg('Lista exportada e zerada. Clique em “+ Lista de acabamentos” para iniciar outra.');
+  }
 
   // ===== Eventos =====
   $('#btnAbrirAcab').addEventListener('click', abrir);
@@ -543,6 +538,76 @@ function exportarPDF(){
   load();
   renderListaComodos();
 
-  // ping de debug
+  // ====== Melhorias mobile (sem inline script) ======
+  // 1) Corrige 100vh no mobile
+  function fixVH(){
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', vh + 'px');
+  }
+  window.addEventListener('resize', fixVH);
+  window.addEventListener('orientationchange', fixVH);
+  fixVH();
+
+  // 2) Teclado numérico + placeholder "0" e remover "0" inicial dos inputs
+  function patchNumericInputs(){
+    document.querySelectorAll('input[type="number"]').forEach(el=>{
+      el.setAttribute('inputmode', 'numeric');
+      el.setAttribute('pattern', '[0-9]*');
+      if (!el.placeholder) el.placeholder = '0';
+      if (el.value === '0') el.value = '';
+    });
+  }
+  patchNumericInputs();
+
+  // 3) Barra de ações fixa (mobile) que espelha ações principais
+  (function setupMobileFooter(){
+    const ma = document.getElementById('mobileActions');
+    if(!ma) return;
+
+    const btnPrimary = document.getElementById('maPrimary');
+    const btnSec = document.getElementById('maSecondary');
+    const btnExp = document.getElementById('maExport');
+
+    const btnSalvarItem = document.getElementById('btnSalvarItem');
+    const btnPersonalizado = document.getElementById('btnPersonalizado');
+    const btnNovoComodo = document.getElementById('btnNovoComodo');
+    const btnExportarAcab = document.getElementById('btnExportarAcab');
+    const btnAddPers = document.getElementById('btnAddPers');
+    const btnVoltarNormal = document.getElementById('btnVoltarNormal');
+
+    function setFooterMode(isPers){
+      if(isPers){
+        btnPrimary.textContent = 'Salvar kit';
+        btnSec.textContent = 'Voltar';
+        btnPrimary.onclick = () => btnAddPers?.click();
+        btnSec.onclick = () => btnVoltarNormal?.click();
+      }else{
+        btnPrimary.textContent = 'Salvar item';
+        btnSec.textContent = 'Personalizado';
+        btnPrimary.onclick = () => btnSalvarItem?.click();
+        btnSec.onclick = () => btnPersonalizado?.click();
+        // long-press/ctx para adicionar novo cômodo rápido
+        btnSec.oncontextmenu = (e) => { e.preventDefault(); btnNovoComodo?.click(); };
+      }
+      btnExp.onclick = () => btnExportarAcab?.click();
+
+      const isOpen = modal?.classList.contains('open');
+      ma.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+      ma.style.display = (isOpen && window.matchMedia('(max-width: 640px)').matches) ? 'flex' : 'none';
+    }
+
+    // Observa mudanças de modo
+    const obs = new MutationObserver(() => setFooterMode(!blocoPers.classList.contains('hidden')));
+    obs.observe(blocoPers, { attributes:true, attributeFilter:['class'] });
+
+    // Observa abrir/fechar modal
+    const obsModal = new MutationObserver(() => {
+      setFooterMode(!blocoPers.classList.contains('hidden'));
+    });
+    obsModal.observe(modal, { attributes:true, attributeFilter:['class'] });
+
+    setFooterMode(false);
+  })();
+
   console.log('[App] init ok');
 })();
