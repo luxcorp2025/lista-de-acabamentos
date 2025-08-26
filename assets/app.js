@@ -1,10 +1,43 @@
 (() => {
   'use strict';
 
-  // ===== Service Worker: registra no load =====
+  // ===== Service Worker: registra no load (com bust de cache e auto-reload) =====
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js').catch(console.warn);
+    window.addEventListener('load', async () => {
+      try {
+        // mude este valor SEMPRE que alterar o service-worker.js
+        const SW_VERSION = '2025-08-26-04';
+
+        const reg = await navigator.serviceWorker.register(`./service-worker.js?v=${SW_VERSION}`, {
+          updateViaCache: 'none'
+        });
+
+        // se já existe um SW novo esperando, ativa na hora
+        if (reg.waiting) reg.waiting.postMessage('SKIP_WAITING');
+
+        // quando encontrar um SW novo instalando, força ativação ao terminar
+        reg.addEventListener('updatefound', () => {
+          const sw = reg.installing;
+          if (sw) {
+            sw.addEventListener('statechange', () => {
+              if (sw.state === 'installed' && navigator.serviceWorker.controller) {
+                sw.postMessage('SKIP_WAITING');
+              }
+            });
+          }
+        });
+
+        // quando o controlador muda (novo SW assume), recarrega 1x
+        let reloaded = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!reloaded) {
+            reloaded = true;
+            location.reload();
+          }
+        });
+      } catch (e) {
+        console.warn('[SW register]', e);
+      }
     });
   }
 
@@ -538,7 +571,7 @@
   load();
   renderListaComodos();
 
-  // ====== Melhorias mobile (sem inline script) ======
+  // ====== Melhorias mobile ======
   // 1) Corrige 100vh no mobile
   function fixVH(){
     const vh = window.innerHeight * 0.01;
