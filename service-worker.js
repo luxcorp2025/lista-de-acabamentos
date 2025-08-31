@@ -1,118 +1,93 @@
-/* Luxcorp • Lista de Acabamentos — Service Worker (robusto p/ GitHub Pages)
- * Rotas:
- *  - HTML (navigate): network-first + fallback index
- *  - Estáticos (js/css/img/manifest/icons): cache-first
- *  - Outros: stale-while-revalidate
- * Troque VERSION a cada release.
- */
-const VERSION = 'v2025-08-26-04';
-const CACHE_NAME = `lux-acab-${VERSION}`;
+/* service-worker.js */
+const VERSION = '2025-09-01-02';
+const CACHE = `lux-v-${VERSION}`;
 
-// Base do SW (funciona em /usuario/repo/)
-const BASE = self.location.href.replace(/service-worker\.js(\?.*)?$/i, '');
+// Escopo/base do SW (funciona em GitHub Pages com subpasta)
+const SCOPE_URL = new URL(self.registration.scope);
+const INDEX_URLS = [
+  new URL('index.html', SCOPE_URL).toString(),
+  SCOPE_URL.toString(), // raiz do escopo (serve index.html)
+];
 
-// Precache enxuto (sem app.js com query pra evitar erro)
+// Nunca cachear estes (sempre rede)
+const NEVER_CACHE = [
+  /service-worker(\.[^\/]+)?\.js(\?.*)?$/i,
+  /assets\/app\.js(\?.*)?$/i,
+];
+
+// Pré-cache básico (opcional)
 const PRECACHE_URLS = [
+  // relativos ao escopo do SW
   'index.html',
-  'manifest.webmanifest',
-  'assets/img/luxcorp-logo.png',
-  'assets/img/luxcorp-logo.jpg',
-  'assets/icons/icon-16.png',
-  'assets/icons/icon-32.png',
-].map(p => new URL(p, BASE).toString());
+  './',
+];
 
-// ---------- Helpers ----------
-function isSameOrigin(urlStr) {
-  try { return new URL(urlStr).origin === self.location.origin; } catch { return false; }
-}
-
-async function cacheFirst(req) {
-  const cache = await caches.open(CACHE_NAME);
-  const hit = await cache.match(req, { ignoreSearch: false });
-  if (hit) return hit;
-  const res = await fetch(req);
-  if (res && res.ok) cache.put(req, res.clone()).catch(() => {});
-  return res;
-}
-
-async function networkFirst(req) {
-  const cache = await caches.open(CACHE_NAME);
-  try {
-    const res = await fetch(req);
-    if (res && res.ok) cache.put(req, res.clone()).catch(() => {});
-    return res;
-  } catch {
-    const cached = await cache.match(req, { ignoreSearch: false });
-    if (cached) return cached;
-    if (req.mode === 'navigate') {
-      const idx = await cache.match(new URL('index.html', BASE).toString());
-      if (idx) return idx;
-    }
-    // último recurso: tenta rede (pode falhar off-line)
-    return fetch(req).catch(() => new Response('Offline', { status: 503 }));
-  }
-}
-
-async function staleWhileRevalidate(req) {
-  const cache = await caches.open(CACHE_NAME);
-  const cached = await cache.match(req, { ignoreSearch: false });
-  const fetchPromise = fetch(req).then(res => {
-    if (res && res.ok) cache.put(req, res.clone()).catch(() => {});
-    return res;
-  }).catch(() => null);
-  return cached || fetchPromise || fetch(req);
-}
-
-// ---------- Install / Activate ----------
-self.addEventListener('install', evt => {
-  evt.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(PRECACHE_URLS))
-      .then(() => self.skipWaiting())
-      .catch(() => self.skipWaiting()) // se algum asset falhar, segue a vida
+self.addEventListener('install', (event) => {
+  self.skipWaiting();
+  event.waitUntil(
+    caches.open(CACHE).then((cache) => cache.addAll(PRECACHE_URLS).catch(() => {}))
   );
 });
 
-self.addEventListener('activate', evt => {
-  evt.waitUntil((async () => {
+self.addEventListener('activate', (event) => {
+  event.waitUntil((async () => {
     const keys = await caches.keys();
     await Promise.all(
-      keys.filter(k => k.startsWith('lux-acab-') && k !== CACHE_NAME)
-          .map(k => caches.delete(k))
+      keys.map((k) => (k.startsWith('lux-v-') && k !== CACHE) ? caches.delete(k) : null)
     );
     await self.clients.claim();
   })());
 });
 
-// ---------- Fetch routing ----------
-self.addEventListener('fetch', evt => {
-  const req = evt.request;
-  if (req.method !== 'GET' || !isSameOrigin(req.url)) return;
-
-  const url = new URL(req.url);
-  const dest = req.destination;           // 'document' | 'script' | 'style' | 'image' | ...
-  const accept = req.headers.get('accept') || '';
-
-  // HTML / navegação → network-first
-  if (req.mode === 'navigate' || dest === 'document' || accept.includes('text/html')) {
-    evt.respondWith(networkFirst(req));
-    return;
-  }
-
-  // Estáticos → cache-first
-  if (
-    dest === 'script' || dest === 'style' || dest === 'image' ||
-    /\.(?:js|css|png|jpe?g|svg|webp|ico|gif|json|webmanifest)$/.test(url.pathname)
-  ) {
-    evt.respondWith(cacheFirst(req));
-    return;
-  }
-
-  // Restante → S-W-R
-  evt.respondWith(staleWhileRevalidate(req));
+self.addEventListener('message', (event) => {
+  if (event.data === 'SKIP_WAITING') self.skipWaiting();
 });
 
-// Opcional: permitir atualizar imediatamente via postMessage
-self.addEventListener('message', evt => {
-  if (evt.data === 'SKIP_WAITING') self.skipWaiting();
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  const url = new URL(req.url);
+
+  // não cachear app.js e o próprio SW
+  if (NEVER_CACHE.some((rx) => rx.test(url.pathname))) {
+    event.respondWith(fetch(req));
+    return;
+  }
+
+  // Navegações → network-first com fallback pro index do escopo
+  if (req.mode === 'navigate') {
+    event.respondWith(
+      fetch(req, { cache: 'no-store' }).catch(async () => {
+        const cache = await caches.open(CACHE);
+        // tenta as URLs conhecidas do index (escopo + index.html)
+        for (const u of INDEX_URLS) {
+          const hit = await cache.match(u);
+          if (hit) return hit;
+        }
+        // tenta variações comuns
+        return (await cache.match('index.html'))
+            || (await cache.match('/index.html'))
+            || Response.error();
+      })
+    );
+    return;
+  }
+
+  // Demais GETs → network-first, com fallback para cache
+  if (req.method === 'GET') {
+    event.respondWith((async () => {
+      try {
+        const resp = await fetch(req);
+        if (resp && resp.ok && resp.type !== 'opaque') {
+          const cache = await caches.open(CACHE);
+          cache.put(req, resp.clone());
+        }
+        return resp;
+      } catch {
+        const cache = await caches.open(CACHE);
+        const hit = await cache.match(req);
+        if (hit) return hit;
+        return Response.error();
+      }
+    })());
+  }
 });

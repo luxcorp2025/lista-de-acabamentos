@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Luxcorp • Lista de Acabamentos</title>
+  <title>Luxcorp • LuxApp</title>
 
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/icon-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="assets/icons/icon-16.png">
@@ -20,45 +20,80 @@
                  frame-src 'self';">
 
   <style>
-    :root{ --bg:#0e1320; --surface:#141b2f; --muted:#8fa1c9; --text:#e8edff; --accent:#4aa3ff; --danger:#ff6b7a; --radius:14px; --vh:1vh; }
+    :root{
+      --bg:#0e1320; --surface:#141b2f; --muted:#8fa1c9; --text:#e8edff; --accent:#4aa3ff; --danger:#ff6b7a;
+      --radius:14px; --vh:1vh; --sheetHead:56px; --sheetFoot:76px;
+    }
     *{box-sizing:border-box} html,body{height:100%}
     body{
       margin:0;font:500 16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Arial,sans-serif;
-      background:radial-gradient(1200px 800px at -15% -10%, #1b295c 0%, transparent 60%),
-                 radial-gradient(900px 700px at 120% 10%, #0f3447 0%, transparent 55%),var(--bg);
+      background:
+        radial-gradient(1200px 800px at -15% -10%, #1b295c 0%, transparent 60%),
+        radial-gradient(900px 700px at 120% 10%, #0f3447 0%, transparent 55%),
+        var(--bg);
       color:var(--text)
     }
+    /* Animação de entrada do app */
+    @keyframes fadeUp { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform:none; } }
+    .app-anim { animation: fadeUp .40s ease-out both; }
+
     .wrap{max-width:980px;margin:28px auto;padding:0 16px}
 
-    header{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center}
+    header{display:grid;grid-template-columns:1fr;gap:16px;align-items:center}
     .brand-row{display:flex;align-items:center;gap:12px}
     .brand-row img{width:36px;height:36px;object-fit:contain;border-radius:8px}
     .brand-row h1{margin:0;font-size:28px;line-height:1}
     header p{margin:6px 0 0;color:var(--muted)}
-    .toolbar{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+
     .btn{
       border:1px solid rgba(255,255,255,.16);
       border-radius:12px;padding:10px 14px;background:linear-gradient(180deg,var(--accent),#2b79d7);
       color:#fff;font-weight:700;cursor:pointer;transition:transform .06s
     }
     .btn:active{transform:translateY(1px)}
-    .btn.ghost{background:transparent}
     .btn.secondary{background:#18233d}
     .btn.tonal{background:#0c1427;border-color:rgba(255,255,255,.14)}
     .btn.danger{background:#4a1f2a;border-color:#c94962}
     .btn.small{padding:6px 10px;border-radius:10px;font-weight:600}
 
-    /* Toque confortável no celular + evitar zoom ao focar */
     input, select, button, textarea{ font-size:16px; min-height:44px; }
 
     .empty{color:var(--muted);text-align:center;padding:24px}
 
+    .cta-card{
+      margin:16px 0; padding:14px; border-radius:var(--radius);
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.10); box-shadow:0 10px 30px rgba(0,0,0,.35);
+    }
+    .cta-card h2{ margin:0 0 6px; font-size:18px; }
+    .btn-cta{
+      width:100%; margin-top:8px;
+      background:linear-gradient(180deg,var(--accent),#2b79d7);
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:12px; padding:12px 14px; color:#fff; font-weight:800;
+    }
+
+    /* Modal / Sheet */
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(5,8,16,.55);backdrop-filter:blur(4px);padding:16px;z-index:50}
     .modal.open{display:flex}
-    .sheet{width:min(960px,100%);background:var(--surface);border:1px solid rgba(255,255,255,.14);border-radius:16px;box-shadow:0 30px 60px rgba(0,0,0,.45);overflow:hidden}
-    .sheet header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.1);position:sticky;top:0;z-index:2;background:inherit;backdrop-filter:saturate(140%) blur(4px)}
+    .sheet{
+      width:min(960px,100%);background:var(--surface);border:1px solid rgba(255,255,255,.14);border-radius:16px;box-shadow:0 30px 60px rgba(0,0,0,.45);overflow:hidden;
+      /* animação suave ao abrir */
+      transform: translateY(8px); opacity:0; transition: transform .24s ease-out, opacity .24s ease-out;
+    }
+    .modal.open .sheet{ transform:none; opacity:1; }
+
+    .sheet header{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.1);
+      position:sticky;top:0;z-index:2;background:inherit;backdrop-filter:saturate(140%) blur(4px)
+    }
     .sheet header h3{margin:0;font-size:18px}
-    .sheet .body{padding:16px;max-height:70vh;overflow:auto}
+    .sheet .body{
+      padding:16px;
+      max-height:calc(var(--vh) * 100 - var(--sheetHead) - var(--sheetFoot) - env(safe-area-inset-bottom));
+      overflow:auto;
+    }
 
     label{font-size:13px;color:var(--muted)}
     input[type="text"],input[type="number"],select{
@@ -88,25 +123,32 @@
     .hidden{display:none !important}
     .act{display:inline-flex;gap:6px;flex-wrap:wrap}
 
-    /* Mobile */
+    /* ===== Barra fixa inferior: 2 colunas + 3º botão embaixo (span 2) ===== */
+    .mobile-actions{
+      position:sticky; bottom:0; z-index:5;
+      display:grid; gap:10px;
+      grid-template-columns: 1fr 1fr;
+      padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+      background:linear-gradient(180deg, rgba(16,18,24,.6), rgba(16,18,24,.96));
+      backdrop-filter: blur(8px);
+      border-top:1px solid rgba(255,255,255,.08);
+    }
+    .mobile-actions .btn{ width:100%; }
+    #maPrimary   { grid-column: 1; }
+    #maSecondary { grid-column: 2; }
+    #maAddRoom   { grid-column: 1 / -1; } /* ocupa a linha inteira embaixo */
+
+    #errOverlay{
+      position:fixed; inset:auto 12px 12px 12px; background:#2b1f1f; color:#ffdede;
+      border:1px solid #c94962; border-radius:12px; padding:10px 12px; font:13px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      z-index:9999; display:none; white-space:pre-wrap;
+    }
+
     @media (max-width:640px){
       body{font-size:15px}
       .wrap{margin:16px auto}
-      header .toolbar{justify-content:stretch}
-      header .toolbar .btn{flex:1}
       .modal{align-items:flex-end}
       .sheet{width:100%;max-width:none;border-radius:16px 16px 0 0}
-      /* ocupa a altura útil do aparelho e deixa espaço p/ a barra fixa de ações */
-      .sheet .body{
-        max-height:calc(var(--vh) * 100 - 56px - 76px); /* header ~56px, footer ~76px */
-        padding-bottom:96px; /* respiro acima do footer fixo */
-      }
-      .act{display:flex}
-      .act .btn{flex:1}
-      .amb-actions{justify-content:stretch}
-      .amb-actions .btn{flex:1}
-
-      /* Tabela → cartões */
       table.items thead{display:none}
       table.items, table.items tbody, table.items tr, table.items td{display:block;width:100%}
       table.items tr{
@@ -124,47 +166,29 @@
       table.items td:last-child{padding-top:8px}
       .btn.small{padding:8px 10px}
     }
-
-    /* Barra de ações fixa (apenas mobile) */
-    .mobile-actions{
-      display:none;
-    }
-    @media (max-width:640px){
-      .mobile-actions{
-        position:sticky; bottom:0; z-index:5;
-        display:flex; gap:10px; padding:12px 16px calc(12px + env(safe-area-inset-bottom));
-        background:linear-gradient(180deg, rgba(16,18,24,.6), rgba(16,18,24,.96));
-        backdrop-filter: blur(8px);
-        border-top:1px solid rgba(255,255,255,.08);
-      }
-      .mobile-actions .btn{ flex:1; }
-    }
-
-    /* Overlay de erro */
-    #errOverlay{
-      position:fixed; inset:auto 12px 12px 12px; background:#2b1f1f; color:#ffdede;
-      border:1px solid #c94962; border-radius:12px; padding:10px 12px; font:13px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      z-index:9999; display:none; white-space:pre-wrap;
-    }
   </style>
 </head>
 <body>
-  <div class="wrap" id="appRoot">
+  <div class="wrap app-anim" id="appRoot">
     <header>
       <div>
         <div class="brand-row">
           <img src="assets/img/luxcorp-logo.png" alt="Luxcorp"
                onerror="this.onerror=null; this.src='assets/img/luxcorp-logo.jpg';">
-          <h1>Lista de Acabamentos</h1>
+          <h1>LuxApp</h1>
         </div>
-        <p>Crie a lista, adicione cômodos e exporte um PDF com o logo.</p>
-      </div>
-      <div class="toolbar">
-        <button class="btn" id="btnAbrirAcab" type="button">+ Lista de acabamentos</button>
+        <p>Crie listas, adicione cômodos e exporte um PDF com o logo.</p>
       </div>
     </header>
 
-    <div class="empty">Clique em <strong>+ Lista de acabamentos</strong> para começar.</div>
+    <!-- CTA central -->
+    <section class="cta-card">
+      <h2>Criar uma nova lista</h2>
+      <p class="muted">Defina os cômodos, salve os itens e gere o PDF.</p>
+      <button class="btn btn-cta" id="btnAbrirAcabHero" type="button">+ Nova lista de acabamentos</button>
+    </section>
+
+    <div class="empty">Clique em <strong>+ Nova lista de acabamentos</strong> para começar.</div>
   </div>
 
   <!-- Modal -->
@@ -172,15 +196,18 @@
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="tituloAcab">
       <header>
         <h3 id="tituloAcab">Lista de Acabamentos</h3>
-        <div class="toolbar">
-          <button class="btn ghost" id="btnFecharAcab" type="button">Fechar</button>
+        <div class="act">
           <button class="btn secondary" id="btnExportarAcab" type="button">Exportar PDF</button>
+          <button class="btn tonal" id="btnFecharAcab" type="button">Fechar</button>
         </div>
       </header>
       <div class="body">
-        <!-- Nome da lista -->
+        <!-- Nome da lista (começa vazio) -->
         <div class="row-2">
-          <div><label for="nomeListaAcab">Nome da lista</label><input id="nomeListaAcab" type="text" placeholder="Ex.: Acabamentos – Apto 402" autocomplete="off" /></div>
+          <div>
+            <label for="nomeListaAcab">Nome da lista</label>
+            <input id="nomeListaAcab" type="text" placeholder="Ex.: Acabamentos – Apto 402" autocomplete="off" />
+          </div>
           <div></div>
         </div>
 
@@ -278,19 +305,7 @@
                 <div></div><div></div>
               </div>
 
-              <!-- Ações principais -->
-              <div class="row-2" style="margin-top:12px">
-                <div class="act">
-                  <button class="btn" id="btnSalvarItem" type="button">Salvar item</button>
-                  <button class="btn secondary" id="btnPersonalizado" type="button">Acabamento personalizado</button>
-                </div>
-                <div class="act" style="justify-self:end">
-                  <button class="btn" id="btnNovoComodo" type="button">Adicionar outro cômodo à lista</button>
-                </div>
-              </div>
-
-              <!-- Itens do cômodo (tabela) -->
-              <div id="wrapItensComodo" style="margin-top:12px"></div>
+              <!-- (botões internos removidos) -->
             </div></div>
           </div>
         </div>
@@ -392,11 +407,11 @@
         <p class="muted" id="msgAcab"></p>
       </div>
 
-      <!-- Barra de ações fixa (apenas mobile) -->
+      <!-- Barra fixa inferior: 2 em cima + 1 embaixo -->
       <div class="mobile-actions" id="mobileActions" aria-hidden="true">
         <button class="btn" id="maPrimary" type="button">Salvar item</button>
         <button class="btn secondary" id="maSecondary" type="button">Personalizado</button>
-        <button class="btn tonal" id="maExport" type="button">Exportar</button>
+        <button class="btn tonal" id="maAddRoom" type="button">Adicionar outro cômodo à lista</button>
       </div>
     </div>
   </div>
@@ -404,6 +419,6 @@
   <div id="errOverlay"></div>
 
   <!-- app com versão para quebrar cache -->
-  <script src="assets/app.js?v=2025-08-26-02" defer></script>
+  <script src="assets/app.js?v=2025-09-01-02" defer></script>
 </body>
 </html>
