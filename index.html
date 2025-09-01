@@ -3,12 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Luxcorp • LuxApp</title>
+  <title>LuxApp</title>
 
   <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/icon-32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="assets/icons/icon-16.png">
   <link rel="manifest" href="manifest.webmanifest">
-
   <meta name="theme-color" content="#0b0f14" />
 
   <meta http-equiv="Content-Security-Policy"
@@ -21,34 +20,40 @@
 
   <style>
     :root{
-      --bg:#0e1320; --surface:#141b2f; --muted:#8fa1c9; --text:#e8edff; --accent:#4aa3ff; --danger:#ff6b7a;
-      --radius:14px; --vh:1vh; --sheetHead:56px; --sheetFoot:76px;
+      --bg:#0e1320; --surface:#141b2f; --muted:#8fa1c9; --text:#e8edff; --accent:#4aa3ff; --danger:#ff6b7a; --radius:14px; --vh:1vh;
+      --orange1:#ffb357; --orange2:#ff7a18; --orange3:#ffd36b;
+      --portal-dur:3600ms;
     }
     *{box-sizing:border-box} html,body{height:100%}
     body{
       margin:0;font:500 16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Arial,sans-serif;
+      color:var(--text);
       background:
         radial-gradient(1200px 800px at -15% -10%, #1b295c 0%, transparent 60%),
         radial-gradient(900px 700px at 120% 10%, #0f3447 0%, transparent 55%),
         var(--bg);
-      color:var(--text)
     }
-    /* Animação de entrada do app */
-    @keyframes fadeUp { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform:none; } }
-    .app-anim { animation: fadeUp .40s ease-out both; }
-
     .wrap{max-width:980px;margin:28px auto;padding:0 16px}
 
-    header{display:grid;grid-template-columns:1fr;gap:16px;align-items:center}
+    header{display:grid;grid-template-columns:1fr;gap:12px;align-items:center}
     .brand-row{display:flex;align-items:center;gap:12px}
     .brand-row img{width:36px;height:36px;object-fit:contain;border-radius:8px}
     .brand-row h1{margin:0;font-size:28px;line-height:1}
     header p{margin:6px 0 0;color:var(--muted)}
 
+    /* Home box antigo (mantido) */
+    .home-grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:14px}
+    .home-card{
+      border-radius:16px;padding:18px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.12);box-shadow:0 10px 30px rgba(0,0,0,.35)
+    }
+    .home-card h3{margin:0 0 10px}
+    .home-card .btn{width:100%;}
+
     .btn{
       border:1px solid rgba(255,255,255,.16);
-      border-radius:12px;padding:10px 14px;background:linear-gradient(180deg,var(--accent),#2b79d7);
-      color:#fff;font-weight:700;cursor:pointer;transition:transform .06s
+      border-radius:12px;padding:12px 16px;background:linear-gradient(180deg,var(--accent),#2b79d7);
+      color:#fff;font-weight:700;cursor:pointer;transition:transform .06s;
     }
     .btn:active{transform:translateY(1px)}
     .btn.secondary{background:#18233d}
@@ -58,42 +63,14 @@
 
     input, select, button, textarea{ font-size:16px; min-height:44px; }
 
-    .empty{color:var(--muted);text-align:center;padding:24px}
+    .empty{color:var(--muted);text-align:center;padding:16px 0}
 
-    .cta-card{
-      margin:16px 0; padding:14px; border-radius:var(--radius);
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-      border:1px solid rgba(255,255,255,.10); box-shadow:0 10px 30px rgba(0,0,0,.35);
-    }
-    .cta-card h2{ margin:0 0 6px; font-size:18px; }
-    .btn-cta{
-      width:100%; margin-top:8px;
-      background:linear-gradient(180deg,var(--accent),#2b79d7);
-      border:1px solid rgba(255,255,255,.16);
-      border-radius:12px; padding:12px 14px; color:#fff; font-weight:800;
-    }
-
-    /* Modal / Sheet */
     .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(5,8,16,.55);backdrop-filter:blur(4px);padding:16px;z-index:50}
     .modal.open{display:flex}
-    .sheet{
-      width:min(960px,100%);background:var(--surface);border:1px solid rgba(255,255,255,.14);border-radius:16px;box-shadow:0 30px 60px rgba(0,0,0,.45);overflow:hidden;
-      /* animação suave ao abrir */
-      transform: translateY(8px); opacity:0; transition: transform .24s ease-out, opacity .24s ease-out;
-    }
-    .modal.open .sheet{ transform:none; opacity:1; }
-
-    .sheet header{
-      display:flex;align-items:center;justify-content:space-between;
-      padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.1);
-      position:sticky;top:0;z-index:2;background:inherit;backdrop-filter:saturate(140%) blur(4px)
-    }
+    .sheet{width:min(960px,100%);background:var(--surface);border:1px solid rgba(255,255,255,.14);border-radius:16px;box-shadow:0 30px 60px rgba(0,0,0,.45);overflow:hidden}
+    .sheet header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.1);background:inherit;backdrop-filter:saturate(140%) blur(4px);z-index:2}
     .sheet header h3{margin:0;font-size:18px}
-    .sheet .body{
-      padding:16px;
-      max-height:calc(var(--vh) * 100 - var(--sheetHead) - var(--sheetFoot) - env(safe-area-inset-bottom));
-      overflow:auto;
-    }
+    .sheet .body{padding:16px;max-height:70vh;overflow:auto}
 
     label{font-size:13px;color:var(--muted)}
     input[type="text"],input[type="number"],select{
@@ -122,33 +99,26 @@
 
     .hidden{display:none !important}
     .act{display:inline-flex;gap:6px;flex-wrap:wrap}
+    .desk-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+    @media (max-width:640px){ .desk-actions{display:none} }
 
-    /* ===== Barra fixa inferior: 2 colunas + 3º botão embaixo (span 2) ===== */
-    .mobile-actions{
-      position:sticky; bottom:0; z-index:5;
-      display:grid; gap:10px;
-      grid-template-columns: 1fr 1fr;
-      padding:12px 16px calc(12px + env(safe-area-inset-bottom));
-      background:linear-gradient(180deg, rgba(16,18,24,.6), rgba(16,18,24,.96));
-      backdrop-filter: blur(8px);
-      border-top:1px solid rgba(255,255,255,.08);
-    }
-    .mobile-actions .btn{ width:100%; }
-    #maPrimary   { grid-column: 1; }
-    #maSecondary { grid-column: 2; }
-    #maAddRoom   { grid-column: 1 / -1; } /* ocupa a linha inteira embaixo */
-
-    #errOverlay{
-      position:fixed; inset:auto 12px 12px 12px; background:#2b1f1f; color:#ffdede;
-      border:1px solid #c94962; border-radius:12px; padding:10px 12px; font:13px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      z-index:9999; display:none; white-space:pre-wrap;
-    }
-
+    /* ===== MOBILE ===== */
     @media (max-width:640px){
       body{font-size:15px}
       .wrap{margin:16px auto}
       .modal{align-items:flex-end}
-      .sheet{width:100%;max-width:none;border-radius:16px 16px 0 0}
+      .sheet{
+        width:100%; max-width:none; border-radius:16px 16px 0 0;
+        display:flex; flex-direction:column;
+        height:calc(var(--vh) * 100 - env(safe-area-inset-bottom));
+        max-height:calc(var(--vh) * 100 - env(safe-area-inset-bottom));
+      }
+      .sheet .body{
+        flex:1; overflow:auto; max-height:none;
+        padding-bottom:96px; /* espaço p/ a barra fixa 2+1 */
+      }
+
+      /* Tabela → cartões */
       table.items thead{display:none}
       table.items, table.items tbody, table.items tr, table.items td{display:block;width:100%}
       table.items tr{
@@ -166,63 +136,171 @@
       table.items td:last-child{padding-top:8px}
       .btn.small{padding:8px 10px}
     }
+
+    /* Barra de ações fixa (Mobile) — layout 2 + 1 */
+    .mobile-actions{display:none}
+    @media (max-width:640px){
+      .mobile-actions{
+        position:sticky; bottom:0; z-index:5;
+        display:grid; gap:10px; padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+        background:linear-gradient(180deg, rgba(16,18,24,.6), rgba(16,18,24,.96));
+        backdrop-filter: blur(8px);
+        border-top:1px solid rgba(255,255,255,.08);
+        grid-template-columns:1fr 1fr;
+        grid-template-areas:"a b" "c c";
+      }
+      .ma-a{grid-area:a}
+      .ma-b{grid-area:b}
+      .ma-c{grid-area:c}
+      .mobile-actions .btn{ width:100%; }
+    }
+
+    /* Overlay de erro */
+    #errOverlay{
+      position:fixed; inset:auto 12px 12px 12px; background:#2b1f1f; color:#ffdede;
+      border:1px solid #c94962; border-radius:12px; padding:10px 12px; font:13px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      z-index:9999; display:none; white-space:pre-wrap;
+    }
+
+    /* ====== SPLASH PORTAL ====== */
+    #splash{ position:fixed; inset:0; z-index:9999; display:grid; place-items:center;
+             background:linear-gradient(180deg,#0e1320,#0b0f14) }
+    #splash.fade{ animation: splashFade .6s ease forwards; }
+    @keyframes splashFade{ to{ opacity:0 } }
+
+    #appRoot{ clip-path: circle(0 at 50% 50%); }
+    #appRoot.reveal{ animation: revealApp 1400ms cubic-bezier(.2,.7,.2,1) forwards; }
+    @keyframes revealApp{ to{ clip-path: circle(150vmax at 50% 50%); } }
+    @media (prefers-reduced-motion: reduce){
+      #appRoot{ clip-path:none } #appRoot.reveal{ animation:none }
+    }
+
+    .portal{ position:absolute; left:50%; top:50%; width:260px; height:260px;
+             transform: translate(-50%,-50%) scale(.45) rotate(0deg);
+             animation: portalOpen var(--portal-dur) cubic-bezier(.2,.7,.2,1) forwards; pointer-events:none; }
+    @keyframes portalOpen{
+      0%{ transform: translate(-50%,-50%) scale(.45) rotate(0deg); opacity:.95 }
+      55%{ transform: translate(-50%,-50%) scale(1.05) rotate(180deg); opacity:1 }
+      100%{ transform: translate(-50%,-50%) scale(2.4) rotate(360deg); opacity:0 }
+    }
+    .portal svg{ width:100%; height:100%; filter: drop-shadow(0 0 18px rgba(255,140,40,.45)) drop-shadow(0 0 42px rgba(255,170,60,.28)); mix-blend-mode: screen; }
+    .ring { fill:none; stroke:url(#gradRing); stroke-width:10; stroke-linecap:round; stroke-dasharray: 10 14; animation: ringSpin 1200ms linear infinite; }
+    .ring.back{ stroke-width:6; stroke:url(#gradRingSoft); animation-direction: reverse; opacity:.75 }
+    @keyframes ringSpin{ to{ stroke-dashoffset: -80 } }
+    .streak{ fill:none; stroke:url(#gradSpark); stroke-width:3; stroke-linecap:round; stroke-dasharray: 12 40; animation: streakRun 900ms linear infinite; filter:url(#gGlow) }
+    .streak.rev{ animation-direction: reverse; opacity:.8 }
+    @keyframes streakRun{ to{ stroke-dashoffset: -120 } }
+    .embers{ transform-origin: 130px 130px; animation: embersOrbit 1.8s linear infinite; }
+    .e{ fill:url(#gradSpark); opacity:.85; filter:url(#gGlow) }
+    .e:nth-child(odd){ animation: emberPulse 900ms ease-in-out infinite alternate }
+    .e:nth-child(even){ animation: emberPulse 1100ms ease-in-out infinite alternate }
+    @keyframes embersOrbit{ to{ transform: rotate(360deg) } }
+    @keyframes emberPulse{ from{ opacity:.55 } to{ opacity:1 } }
+    .hint{ position:absolute; left:50%; top:calc(50% + 170px); transform:translateX(-50%); color:var(--muted); font-size:13px; letter-spacing:.2px; }
+    .loading{ position:absolute; left:50%; top:calc(50% + 190px); transform:translateX(-50%); width:220px; height:3px; background: rgba(255,255,255,.14); border-radius:99px; overflow:hidden; }
+    .loading i{ display:block; height:100%; width:0%; background: linear-gradient(90deg, var(--orange3), var(--orange2)); box-shadow:0 0 18px rgba(255,170,60,.45); animation: load var(--portal-dur) cubic-bezier(.2,.7,.2,1) forwards; }
+    @keyframes load{ to{ width:100% } }
+    @media (prefers-reduced-motion: reduce){
+      .portal,.ring,.streak,.embers,.e,.loading i,#splash.fade{ animation:none !important }
+    }
   </style>
 </head>
 <body>
-  <div class="wrap app-anim" id="appRoot">
-    <header>
-      <div>
-        <div class="brand-row">
-          <img src="assets/img/luxcorp-logo.png" alt="Luxcorp"
-               onerror="this.onerror=null; this.src='assets/img/luxcorp-logo.jpg';">
-          <h1>LuxApp</h1>
-        </div>
-        <p>Crie listas, adicione cômodos e exporte um PDF com o logo.</p>
-      </div>
-    </header>
-
-    <!-- CTA central -->
-    <section class="cta-card">
-      <h2>Criar uma nova lista</h2>
-      <p class="muted">Defina os cômodos, salve os itens e gere o PDF.</p>
-      <button class="btn btn-cta" id="btnAbrirAcabHero" type="button">+ Nova lista de acabamentos</button>
-    </section>
-
-    <div class="empty">Clique em <strong>+ Nova lista de acabamentos</strong> para começar.</div>
+  <!-- SPLASH PORTAL -->
+  <div id="splash" aria-hidden="true">
+    <div class="portal">
+      <svg viewBox="0 0 260 260" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <linearGradient id="gradRing" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="var(--orange2)"/><stop offset="100%" stop-color="var(--orange3)"/>
+          </linearGradient>
+          <linearGradient id="gradRingSoft" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="rgba(255,150,60,.6)"/><stop offset="100%" stop-color="rgba(255,210,110,.6)"/>
+          </linearGradient>
+          <linearGradient id="gradSpark" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="var(--orange3)"/><stop offset="100%" stop-color="var(--orange2)"/>
+          </linearGradient>
+          <filter id="gGlow" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="2.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <circle class="ring back" cx="130" cy="130" r="86" />
+        <circle class="ring" cx="130" cy="130" r="86" />
+        <circle class="streak" cx="130" cy="130" r="78" />
+        <circle class="streak rev" cx="130" cy="130" r="94" />
+        <g class="embers">
+          <circle class="e" r="2.2" transform="translate(130,130) rotate(0) translate(0,-86)" />
+          <circle class="e" r="2.2" transform="translate(130,130) rotate(22.5) translate(0,-86)" />
+          <circle class="e" r="2.2" transform="translate(130,130) rotate(45) translate(0,-86)" />
+          <circle class="e" r="2.2" transform="translate(130,130) rotate(67.5) translate(0,-86)" />
+          <circle class="e" r="2.2" transform="translate(130,130) rotate(90) translate(0,-86)" />
+          <circle class="e" r="2.2" transform="translate(130,130) rotate(112.5) translate(0,-86)" />
+          <circle class="e" r="2.2" transform="translate(130,130) rotate(135) translate(0,-86)" />
+          <circle class="e" r="2.2" transform="translate(130,130) rotate(157.5) translate(0,-86)" />
+          <circle class="e" r="2.2" transform="translate(130,130) rotate(180) translate(0,-86)" />
+          <circle class="e" r="2.2" transform="translate(130,130) rotate(202.5) translate(0,-86)" />
+          <circle class="e" r="2.2" transform="translate(130,130) rotate(225) translate(0,-86)" />
+          <circle class="e" r="2.2" transform="translate(130,130) rotate(247.5) translate(0,-86)" />
+          <circle class="e" r="2.2" transform="translate(130,130) rotate(270) translate(0,-86)" />
+          <circle class="e" r="2.2" transform="translate(130,130) rotate(292.5) translate(0,-86)" />
+          <circle class="e" r="2.2" transform="translate(130,130) rotate(315) translate(0,-86)" />
+          <circle class="e" r="2.2" transform="translate(130,130) rotate(337.5) translate(0,-86)" />
+        </g>
+      </svg>
+    </div>
+    <div class="hint">Iniciando…</div>
+    <div class="loading" aria-hidden="true"><i></i></div>
   </div>
 
-  <!-- Modal -->
+  <!-- APP -->
+  <div class="wrap" id="appRoot">
+    <header>
+      <div class="brand-row">
+        <img src="assets/img/luxcorp-logo.png" alt="Luxcorp"
+             onerror="this.onerror=null; this.src='assets/img/luxcorp-logo.jpg';">
+        <h1>LuxApp</h1>
+      </div>
+      <p>Crie a lista de acabamentos, adicione cômodos e exporte um PDF com o logo.</p>
+    </header>
+
+    <!-- Home: caixa + botão interno (como estava) -->
+    <section class="home-grid" aria-label="Ferramentas">
+      <article class="home-card">
+        <h3>Crie uma nova lista</h3>
+        <button class="btn" id="btnNovaLista" type="button">+ Nova lista de acabamentos</button>
+      </article>
+    </section>
+
+    <div class="empty">Toque em <strong>+ Nova lista de acabamentos</strong> para começar.</div>
+  </div>
+
+  <!-- Modal Lista de Acabamentos -->
   <div class="modal" id="modalAcab" aria-hidden="true">
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="tituloAcab">
       <header>
         <h3 id="tituloAcab">Lista de Acabamentos</h3>
-        <div class="act">
+        <div class="toolbar">
           <button class="btn secondary" id="btnExportarAcab" type="button">Exportar PDF</button>
           <button class="btn tonal" id="btnFecharAcab" type="button">Fechar</button>
         </div>
       </header>
+
       <div class="body">
-        <!-- Nome da lista (começa vazio) -->
         <div class="row-2">
-          <div>
-            <label for="nomeListaAcab">Nome da lista</label>
-            <input id="nomeListaAcab" type="text" placeholder="Ex.: Acabamentos – Apto 402" autocomplete="off" />
-          </div>
+          <div><label for="nomeListaAcab">Nome da lista</label><input id="nomeListaAcab" type="text" placeholder="Ex.: Apto 402" autocomplete="off" /></div>
           <div></div>
         </div>
 
-        <!-- BLOCO NORMAL -->
+        <!-- Normal -->
         <div id="blocoNormal">
           <div class="row" style="margin-top:10px">
             <div class="card"><div class="content">
               <h4 style="margin:0 0 10px">Preencha o cômodo e salve itens</h4>
 
-              <!-- Nome do cômodo -->
               <div class="row">
                 <div><label for="nomeComodo">Nome do cômodo</label><input id="nomeComodo" type="text" placeholder="Ex.: Suíte, Cozinha" autocomplete="off" /></div>
               </div>
 
-              <!-- TOMADAS -->
               <div class="row-3" style="margin-top:10px;align-items:end">
                 <div>
                   <label for="tipoTomada">Tomada</label>
@@ -245,7 +323,6 @@
                 </div>
               </div>
 
-              <!-- INTERRUPTOR normal -->
               <div class="row-3" style="margin-top:10px;align-items:end">
                 <div>
                   <label for="tipoInt">Interruptor</label>
@@ -262,7 +339,6 @@
                 <div></div>
               </div>
 
-              <!-- PARALELO -->
               <div class="row-3" style="margin-top:10px;align-items:end">
                 <div>
                   <label for="tipoIntPar">Interruptor paralelo</label>
@@ -279,7 +355,6 @@
                 <div></div>
               </div>
 
-              <!-- INTERMEDIÁRIO -->
               <div class="row-3" style="margin-top:10px;align-items:end">
                 <div>
                   <label for="tipoIntMed">Interruptor intermediário</label>
@@ -296,7 +371,6 @@
                 <div></div>
               </div>
 
-              <!-- CAMPAINHA -->
               <div class="row-3" style="margin-top:10px;align-items:end">
                 <div>
                   <label for="qtdCamp">Campainha</label>
@@ -305,19 +379,25 @@
                 <div></div><div></div>
               </div>
 
-              <!-- (botões internos removidos) -->
+              <div id="wrapItensComodo" style="margin-top:12px"></div>
+
+              <!-- Ações desktop (normal) -->
+              <div class="desk-actions">
+                <button class="btn" id="btnSalvarItem" type="button">Salvar item</button>
+                <button class="btn secondary" id="btnPersonalizado" type="button">Personalizado</button>
+                <button class="btn tonal" id="btnNovoComodo" type="button">Adicionar outro cômodo à lista</button>
+              </div>
             </div></div>
           </div>
         </div>
 
-        <!-- BLOCO PERSONALIZADO -->
+        <!-- Personalizado -->
         <div id="blocoPersonalizado" class="hidden">
           <div class="row" style="margin-top:10px">
             <div class="card"><div class="content">
               <h4 style="margin:0 0 10px">Acabamento personalizado</h4>
               <p class="muted" id="alvoPersInfo"></p>
 
-              <!-- Bastidor -->
               <div class="row-3">
                 <div>
                   <label for="bastidor">Bastidor</label>
@@ -333,7 +413,6 @@
                 <div></div>
               </div>
 
-              <!-- Espelho -->
               <div class="row-3" style="margin-top:10px">
                 <div>
                   <label for="espelhoTipo">Espelho</label>
@@ -360,28 +439,24 @@
                 </div>
               </div>
 
-              <!-- Interruptores módulos -->
               <div class="row-3" style="margin-top:10px;align-items:end">
                 <div><label for="qIntS">Módulo de interruptor simples</label><input id="qIntS" type="number" min="0" step="1" placeholder="0"></div>
                 <div><label for="qIntP">Módulo de interruptor paralelo</label><input id="qIntP" type="number" min="0" step="1" placeholder="0"></div>
                 <div><label for="qIntI">Módulo de interruptor intermediário</label><input id="qIntI" type="number" min="0" step="1" placeholder="0"></div>
               </div>
 
-              <!-- Tomadas módulos -->
               <div class="row-3" style="margin-top:10px;align-items:end">
                 <div><label for="qTom10">Módulo de tomada 10A</label><input id="qTom10" type="number" min="0" step="1" placeholder="0"></div>
                 <div><label for="qTom20">Módulo de tomada 20A</label><input id="qTom20" type="number" min="0" step="1" placeholder="0"></div>
                 <div></div>
               </div>
 
-              <!-- RJ45 -->
               <div class="row-3" style="margin-top:10px;align-items:end">
                 <div><label for="qRJ45_5e">Módulo RJ45 Cat 5e</label><input id="qRJ45_5e" type="number" min="0" step="1" placeholder="0"></div>
                 <div><label for="qRJ45_6e">Módulo RJ45 Cat 6e</label><input id="qRJ45_6e" type="number" min="0" step="1" placeholder="0"></div>
                 <div></div>
               </div>
 
-              <!-- Antena + Pulsador + Dimer + Cego -->
               <div class="row-3" style="margin-top:10px;align-items:end">
                 <div><label for="qAnt">Módulo de antena</label><input id="qAnt" type="number" min="0" step="1" placeholder="0"></div>
                 <div><label for="qPuls">Botão pulsador</label><input id="qPuls" type="number" min="0" step="1" placeholder="0"></div>
@@ -392,8 +467,9 @@
                 <div></div><div></div>
               </div>
 
-              <div class="row-2" style="margin-top:12px">
-                <button class="btn" id="btnAddPers" type="button">Salvar kit personalizado</button>
+              <!-- Ações desktop (personalizado) -->
+              <div class="desk-actions">
+                <button class="btn" id="btnAddPers" type="button">Salvar kit</button>
                 <button class="btn secondary" id="btnVoltarNormal" type="button">Voltar</button>
               </div>
 
@@ -402,23 +478,21 @@
           </div>
         </div>
 
-        <!-- Cômodos salvos -->
         <div class="amb-list" id="listaComodos"></div>
         <p class="muted" id="msgAcab"></p>
       </div>
 
-      <!-- Barra fixa inferior: 2 em cima + 1 embaixo -->
+      <!-- Barra fixa mobile (2 + 1) -->
       <div class="mobile-actions" id="mobileActions" aria-hidden="true">
-        <button class="btn" id="maPrimary" type="button">Salvar item</button>
-        <button class="btn secondary" id="maSecondary" type="button">Personalizado</button>
-        <button class="btn tonal" id="maAddRoom" type="button">Adicionar outro cômodo à lista</button>
+        <button class="btn ma-a" id="maPrimary" type="button">Salvar item</button>
+        <button class="btn secondary ma-b" id="maSecondary" type="button">Personalizado</button>
+        <button class="btn tonal ma-c" id="maAddRoom" type="button">Adicionar outro cômodo à lista</button>
       </div>
     </div>
   </div>
 
   <div id="errOverlay"></div>
 
-  <!-- app com versão para quebrar cache -->
-  <script src="assets/app.js?v=2025-09-01-02" defer></script>
+  <script src="assets/app.js?v=2025-08-31-portal-04" defer></script>
 </body>
 </html>
